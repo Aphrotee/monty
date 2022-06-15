@@ -37,13 +37,13 @@ void (*getsfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int)
 	return (*(ins[i].f));
 }
 /**
- * add_dnodeint - adds a new node to the beginning of the list
+ * add_to_head - adds a new node to the beginning of the stack
  * @head: doubly linked list
  * @n: integer data for new node
  *
  * Return: pointer
  */
-stack_t *add_dnodeint(stack_t **head, const int n)
+stack_t *add_to_head(stack_t **head, const int n)
 {
 	stack_t *new, *temp;
 
@@ -66,13 +66,13 @@ stack_t *add_dnodeint(stack_t **head, const int n)
 		new->n = n;
 		new->next = *head;
 		temp->prev = new;
-		*head = new;
+		head = &new;
 	}
 	return (new);
 }
 
 /**
- * print_dlistint - prints the elements of a doubly linked list
+ * print_stack - prints the elements of a stack
  * @h: head of linked list
  * @lineNum: current line number
  *
@@ -94,7 +94,7 @@ void print_stack(stack_t **h, unsigned int lineNum)
 }
 
 /**
- * print_head - prints the element at the top of a doubly linked list
+ * print_head - prints the element at the top of a stack
  * @h: head of linked list
  * @lineNum: current line number
  *
@@ -166,7 +166,7 @@ void pop_head(stack_t **h, unsigned int lineNum)
 		exit(EXIT_FAILURE);
 	}
 	del = *h;
-	*h = (*h)->next;
+	h = &((*h)->next);
 	(*h)->prev = NULL;
 	free(del);
 }
@@ -197,7 +197,7 @@ void add_head(stack_t **h, unsigned int lineNum)
 	h2->n += (*h)->n;
 	h2->prev = NULL;
 	free(*h);
-	*h = h2;
+	h = &h2;
 }
 /**
  * nop - does nothing
@@ -223,5 +223,5 @@ void push_head(stack_t **h, unsigned int lineNum)
 	int value = atoi(intData);
 
 	printf("%u\n", lineNum);
-	add_dnodeint(h, value);
+	add_to_head(h, value);
 }
