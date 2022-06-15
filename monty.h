@@ -32,7 +32,7 @@ extern char *intData;
 extern int lineNum;
 extern void getqfunc(char *opcode);
 extern void (*getsfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int);
-extern stack_t *add_dnodeint(stack_t **head, const int n);
+extern stack_t *add_to_stack(stack_t **head, const int n);
 extern void print_stack(stack_t **h, unsigned int lineNum);
 extern void print_head(stack_t **h, unsigned int lineNum);
 extern void swap_head(stack_t **h, unsigned int linenum);
