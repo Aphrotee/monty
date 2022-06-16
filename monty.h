@@ -40,4 +40,5 @@ extern void pop_head(stack_t **h, unsigned int lineNum);
 extern void add_head(stack_t **h, unsigned int lineNum);
 extern void nop(stack_t **h, unsigned int lineNum);
 extern void push_head(stack_t **h, unsigned int lineNum);
+extern void free_stack(stack_t *head);
 #endif

@@ -15,8 +15,8 @@ char *intData = NULL;
 int main(int ac, const char *av[])
 {
 	char *tok, *cp;
-	int a = 0, lineNum = 0;
-	FILE *fd;
+	int a = 0, lineNum = 0, lines = 0, ch = 0;
+	FILE *fd, *fp;
 	size_t n = 0;
 	char *line, *code;
 	stack_t *h = NULL;
@@ -25,31 +25,36 @@ int main(int ac, const char *av[])
 	if (ac != 2)
 	{
 		dprintf(2, "USAGE: monty file");
-                exit(EXIT_FAILURE);		
-        }
+		exit(EXIT_FAILURE);
+	}
 	lineNum = 0;
-	fd = fopen(av[1], "r");
-	if (!fd)
+	fp = fopen(av[1], "r");
+	if (!fp)
 	{
 		dprintf(2, "Error: Can't open file %s", av[1]);
 		exit(EXIT_FAILURE);
 	}
+	while (!feof(fp))
+	{
+		ch = fgetc(fp);
+		if (ch == '\n')
+			lines++;
+	}
+	fclose(fp);
+	fd = fopen(av[1], "r");
 	while (getline(&line, &n, fd) != -1)
 	{
 		lineNum++;
-		printf("%d", lineNum);
 		cp = strdup(line);
-		printf("%s\n", cp);
 		tok = strtok(cp, " ");
-		printf("%s\n", tok);
-		code = strdup(tok);
-		printf("%s\n", code);
-		printf("%s\n", tok);
+		if (tok[strlen(tok) - 1] == '\n')
+			code = strndup(tok, strlen(tok) - 1);
+		else
+			code = strdup(tok);
 		intData = strtok(NULL, " ");
-		printf("%s\n", intData);
 		if (!intData)
 			free(intData);
-		if (code == NULL)
+		if (*code == '\0' || *code == '\n')
 		{
 			continue;
 		}
@@ -67,6 +72,7 @@ int main(int ac, const char *av[])
 			execute = getsfunc(code, lineNum);
 		(*execute)(&h, lineNum);
 	}
+	free_stack(h);
 	free(line);
 	return (0);
 }

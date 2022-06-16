@@ -23,6 +23,7 @@ void (*getsfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int)
 		{"add", add_head},
 		{NULL, NULL}
 	};
+	void (*func)(stack_t **, unsigned int);
 
 	for (i = 0; i < 7; i++)
 	{
@@ -34,7 +35,8 @@ void (*getsfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int)
 		dprintf(2, "L%u: unknown instruction %s\n", lineNum, opcode);
 		exit(EXIT_FAILURE);
 	}
-	return (*(ins[i].f));
+	func = *(ins[i].f);
+	return (func);
 }
 /**
  * add_to_head - adds a new node to the beginning of the stack
@@ -45,7 +47,7 @@ void (*getsfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int)
  */
 stack_t *add_to_head(stack_t **head, const int n)
 {
-	stack_t *new, *temp;
+	stack_t *new;
 
 	if (head == NULL)
 		return (NULL);
@@ -61,12 +63,11 @@ stack_t *add_to_head(stack_t **head, const int n)
 	}
 	else
 	{
-		temp = *head;
 		new->prev = NULL;
 		new->n = n;
 		new->next = *head;
-		temp->prev = new;
-		head = &new;
+		(*head)->prev = new;
+		*head = new;
 	}
 	return (new);
 }
@@ -80,18 +81,18 @@ stack_t *add_to_head(stack_t **head, const int n)
  */
 void print_stack(stack_t **h, unsigned int lineNum)
 {
-	const stack_t *current;
+	stack_t *current;
 
 	if (lineNum)
-	{
 		current = *h;
-		while (current != NULL)
-		{
-			printf("%d\n", current->n);
-			current = current->next;
-		}
+	current = *h;
+	while (current != NULL)
+	{
+		printf("%d\n", current->n);
+		current = current->next;
 	}
 }
+
 
 /**
  * print_head - prints the element at the top of a stack
@@ -220,8 +221,30 @@ void nop(stack_t **h, unsigned int lineNum)
  */
 void push_head(stack_t **h, unsigned int lineNum)
 {
-	int value = atoi(intData);
+	int value;
 
-	printf("%u\n", lineNum);
+	if (lineNum)
+		value = atoi(intData);
+	value = atoi(intData);
+
 	add_to_head(h, value);
+}
+/**
+ * free_stack - frees a stack
+ * @head: linked list to be freed
+ *
+ * Return: nothing
+ */
+void free_stack(stack_t *head)
+{
+	stack_t *temp;
+
+	if (head == NULL)
+		return;
+	while (head != NULL)
+	{
+		temp = head->next;
+		free(head);
+		head = temp;
+	}
 }
