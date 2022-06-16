@@ -29,6 +29,7 @@ typedef struct instruction_s
         void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 extern char *intData;
+extern void parse_and_exec_montyFile(FILE *fd, char *line, char *code, char *tok, int lineNum, size_t n, stack_t *h);
 extern int lineNum;
 extern void (*getsfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int);
 extern void (*getqfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int);
@@ -46,7 +47,7 @@ extern void mod_head(stack_t **h, unsigned int lineNum);
 extern void print_head_as_char(stack_t **h, unsigned int lineNum);
 extern void pstr_head(stack_t **h, unsigned int lineNum);
 extern void rotl(stack_t **h, unsigned int lineNum);
-extern void rotf_head(stack_t **h, unsigned int lineNum);
+extern void rotr(stack_t **h, unsigned int lineNum);
 extern void nop(stack_t **h, unsigned int lineNum);
 extern void push_stack(stack_t **h, unsigned int lineNum);
 extern void push_queue(stack_t **h, unsigned int lineNum);

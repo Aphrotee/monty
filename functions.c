@@ -8,6 +8,7 @@
 /**
  * getsfunc - receives opcode as input and returns corresponding function
  * @opcode: command
+ * @lineNum: current line number
  *
  * Return: function pointer
  */
@@ -15,7 +16,50 @@ void (*getsfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int)
 {
 	int i;
 	instruction_t ins[16] = {
-		{"push", push_head},
+		{"push", push_stack},
+		{"pall", print_stack},
+		{"pint", print_head},
+		{"pop", pop_head},
+		{"nop", nop},
+		{"swap", swap_head},
+		{"add", add_head},
+		{"sub", sub_head},
+		{"div", div_head},
+		{"mul", mul_head},
+		{"mod", mod_head},
+		{"pchar", print_head_as_char},
+		{"pstr", pstr_head},
+		{"rotl", rotl},
+		{"rotr", rotr},
+		{NULL, NULL}
+	};
+	void (*func)(stack_t **, unsigned int);
+
+	for (i = 0; i < 15; i++)
+	{
+		if (strcmp(opcode, ins[i].opcode) == 0)
+			break;
+	}
+	if (i == 15)
+	{
+		dprintf(2, "L%u: unknown instruction %s\n", lineNum, opcode);
+		exit(EXIT_FAILURE);
+	}
+	func = *(ins[i].f);
+	return (func);
+}
+/**
+ * getqfunc - receives opcode as input and returns corresponding function
+ * @opcode: command
+ * @lineNum: current line number
+ *
+ * Return: function pointer
+ */
+void (*getqfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int)
+{
+	int i;
+	instruction_t ins[16] = {
+		{"push", push_stack},
 		{"pall", print_stack},
 		{"pint", print_head},
 		{"pop", pop_head},
@@ -61,7 +105,7 @@ void add_to_stack(stack_t **head, const int n)
 	new = (stack_t *)malloc(sizeof(stack_t));
 	if (new == NULL)
 	{
-		dprinf(2, "Error: malloc failed\n");
+		dprintf(2, "Error: malloc failed\n");
 		exit(EXIT_FAILURE);
 	}
 	new->prev = NULL;
@@ -199,16 +243,19 @@ void pop_head(stack_t **h, unsigned int lineNum)
 {
 	stack_t *del;
 
-	if (h == NULL)
+	if (*h == NULL)
 	{
 		dprintf(2, "L%u: can't pop an empty stack\n", lineNum);
 		exit(EXIT_FAILURE);
 	}
 	del = *h;
-	*h = (*h)->next;
-	(*h)->prev = NULL;
-	if (del->next == NULL && del->prev == NULL)
+	if ((*h)->next  == NULL)
 		*h = NULL;
+	else
+	{
+		*h = (*h)->next;
+		(*h)->prev = NULL;
+	}
 	free(del);
 }
 /**
@@ -268,7 +315,7 @@ void sub_head(stack_t **h, unsigned int lineNum)
 	h2->n -= (*h)->n;
 	h2->prev = NULL;
 	free(*h);
-	h = &h2;
+	*h = h2;
 }
 /**
  * div_head - divides the second top element of the stack by
@@ -300,10 +347,10 @@ void div_head(stack_t **h, unsigned int lineNum)
 		exit(EXIT_FAILURE);
 	}
 	h2 = (*h)->next;
-	h2->n = h2->n /(*h)->n;
+	h2->n = h2->n / (*h)->n;
 	h2->prev = NULL;
 	free(*h);
-	h = &h2;
+	*h = h2;
 }
 /**
  * mul_head -  multiplies the second top element of the stack
@@ -333,7 +380,7 @@ void mul_head(stack_t **h, unsigned int lineNum)
 	h2->n *= (*h)->n;
 	h2->prev = NULL;
 	free(*h);
-	h = &h2;
+	*h = h2;
 }
 /**
  * mod_head -  computes the rest of the division of the second
@@ -368,7 +415,7 @@ void mod_head(stack_t **h, unsigned int lineNum)
 	h2->n = h2->n % (*h)->n;
 	h2->prev = NULL;
 	free(*h);
-	h = &h2;
+	*h = h2;
 }
 /**
  * print_head_as_char -  prints the char at the top of
@@ -417,6 +464,8 @@ void pstr_head(stack_t **h, unsigned int lineNum)
 	int d = 0;
 	stack_t *temp;
 
+	if (lineNum)
+		temp = *h;
 	temp = *h;
 	while (temp != NULL)
 	{
@@ -430,9 +479,9 @@ void pstr_head(stack_t **h, unsigned int lineNum)
 		{
 			if (temp->n == 0 || temp->n < 0 || temp->n > 127)
 				return;
-			else
-				printf("%c", temp->n);
+			printf("%c", temp->n);
 		}
+		temp = temp->next;
 	}
 	printf("\n");
 }
@@ -452,6 +501,8 @@ void rotl(stack_t **h, unsigned int lineNum)
 
 	if (*h == NULL)
 		return;
+	if (lineNum)
+		temp = *h;
 	temp = *h;
 	i = temp->n;
 	while (temp->next != NULL)
@@ -476,6 +527,8 @@ void rotr(stack_t **h, unsigned int lineNum)
 
 	if (*h == NULL)
 		return;
+	if (lineNum)
+		temp = *h;
 	temp = *h;
 	while (temp->next != NULL)
 		temp = temp->next;
