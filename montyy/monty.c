@@ -90,15 +90,9 @@ void parse_and_exec_montyFile(FILE *fd, char *line, char *code,
 			continue;
 		}
 		if (a == 0)
-		{
-			printf("in a0");
 			execute = getsfunc(code, lineNum);
-		}
 		else if (a == 1)
-		{
-			printf("in a1");
 			execute = getqfunc(code, lineNum);
-		}
 		(*execute)(&h, lineNum);
 	}
 }
