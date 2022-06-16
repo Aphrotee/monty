@@ -30,15 +30,25 @@ typedef struct instruction_s
 } instruction_t;
 extern char *intData;
 extern int lineNum;
-extern void getqfunc(char *opcode);
 extern void (*getsfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int);
-extern stack_t *add_to_stack(stack_t **head, const int n);
+extern void (*getqfunc(char *opcode, unsigned int lineNum))(stack_t **, unsigned int);
+extern void add_to_stack(stack_t **head, const int n);
+extern void add_to_queue(stack_t **head, const int n);
 extern void print_stack(stack_t **h, unsigned int lineNum);
 extern void print_head(stack_t **h, unsigned int lineNum);
 extern void swap_head(stack_t **h, unsigned int linenum);
 extern void pop_head(stack_t **h, unsigned int lineNum);
 extern void add_head(stack_t **h, unsigned int lineNum);
+extern void sub_head(stack_t **h, unsigned int lineNum);
+extern void div_head(stack_t **h, unsigned int lineNum);
+extern void mul_head(stack_t **h, unsigned int lineNum);
+extern void mod_head(stack_t **h, unsigned int lineNum);
+extern void print_head_as_char(stack_t **h, unsigned int lineNum);
+extern void pstr_head(stack_t **h, unsigned int lineNum);
+extern void rotl(stack_t **h, unsigned int lineNum);
+extern void rotf_head(stack_t **h, unsigned int lineNum);
 extern void nop(stack_t **h, unsigned int lineNum);
-extern void push_head(stack_t **h, unsigned int lineNum);
+extern void push_stack(stack_t **h, unsigned int lineNum);
+extern void push_queue(stack_t **h, unsigned int lineNum);
 extern void free_stack(stack_t *head);
 #endif
