@@ -18,7 +18,7 @@ int main(int ac, const char *av[])
 	int lineNum = 0, lines = 0, ch = 0;
 	FILE *fd, *fp;
 	size_t n = 0;
-	char *line = NULL, *code = NULL;
+	char *line = NULL, *code = NULL, *ext;
 	stack_t *h = NULL;
 
 	if (ac != 2)
@@ -28,9 +28,11 @@ int main(int ac, const char *av[])
 	}
 	lineNum = 0;
 	fp = fopen(av[1], "r");
-	if (!fp)
+	ext = strrchr(av[1], '.');
+	if (!fp || !(strcmp(".txt", ext) == 0 || strcmp(".m", ext) == 0))
 	{
 		dprintf(2, "Error: Can't open file %s\n", av[1]);
+		fclose(fp);
 		exit(EXIT_FAILURE);
 	}
 	while (!feof(fp))
