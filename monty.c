@@ -1,100 +1,113 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stddef.h>
 #include "monty.h"
 
-char *intData = NULL;
+glob_t global = {NULL, NULL};
 /**
- * main - entry point for monty interpreter
- * @ac: argument counter
- * @av: argument array
- *
- * Return: 0 or 1
+ * main - Entry point
+ * @argc: Number of arguments
+ * @argv: Arguments
+ * Return: number of arguments.
  */
-int main(int ac, const char *av[])
+int main(int argc, char *argv[])
 {
-	char *tok = NULL;
-	int lineNum = 0, lines = 0, ch = 0;
-	FILE *fd, *fp;
-	size_t n = 0;
-	char *line = NULL, *code = NULL, *ext;
-	stack_t *h = NULL;
-
-	if (ac != 2)
+	if (argc == 2)
+		handle_command(argv[1]);
+	else
 	{
-		dprintf(2, "USAGE: monty file\n");
+		dprintf(STDERR_FILENO, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
-	lineNum = 0;
-	fp = fopen(av[1], "r");
-	ext = strrchr(av[1], '.');
-	if (!fp || !(strcmp(".txt", ext) == 0 || strcmp(".m", ext) == 0))
-	{
-		dprintf(2, "Error: Can't open file %s\n", av[1]);
-		fclose(fp);
-		exit(EXIT_FAILURE);
-	}
-	while (!feof(fp))
-	{
-		ch = fgetc(fp);
-		if (ch == '\n')
-			lines++;
-	}
-	fclose(fp);
-	fd = fopen(av[1], "r");
-	parse_and_exec_montyFile(fd, line, code, tok, lineNum, n, h);
-	fclose(fd);
-	free(line);
 	return (0);
 }
 /**
- * parse_and_exec_montyFile - parses and interprets the monty file
- * @fd: file descriptor of monty file
- * @line: buffer to contain each line in monty file
- * @code: opdode to be executed
- * @tok: buffer for each token delimited by whitespace in line
- * @lineNum: current line number
- * @n: size of line
- * @h: head of stack
- *
+ * handle_command - Read file
+ * @argv: Arguments
  * Return: Nothing
  */
-void parse_and_exec_montyFile(FILE *fd, char *line, char *code,
-		char *tok, int lineNum, size_t n, stack_t *h)
+void handle_command(char *argv)
 {
-	int a = 0;
-	void (*execute)(stack_t **stack, unsigned int line_number);
+	int count = 0, result = 0;
+	size_t bufsize = 0;
+	char *arguments = NULL, *item = NULL;
+	stack_t *stack = NULL;
 
-	while (getline(&line, &n, fd) != -1)
+	global.fd = fopen(argv, "r");
+	if (global.fd)
 	{
-		lineNum++;
-		tok = strtok(line, " ");
-		if (tok[strlen(tok) - 1] == '\n')
-			code = strndup(tok, strlen(tok) - 1);
-		else
-			code = strdup(tok);
-		intData = strtok(NULL, " ");
-		if (!intData)
-			free(intData);
-		if (*code == '\0' || *code == '\n' || *code == '#')
+		while (getline(&global.line, &bufsize, global.fd) != -1)
 		{
-			continue;
+			count++;
+			arguments = strtok(global.line, " \n\t\r");
+			if (arguments == NULL)
+			{
+				free(arguments);
+				continue;
+			}
+			else if (*arguments == '#')
+				continue;
+			item = strtok(NULL, " \n\t\r");
+			result = get_opc(&stack, arguments, item, count);
+			if (result == 1)
+				push_error(global.fd, global.line, stack, count);
+			else if (result == 2)
+				ins_error(global.fd, global.line, stack, arguments, count);
 		}
-		else if (strcmp(code, "stack") == 0)
-		{
-			a = 0;
-			continue;
-		}
-		else if (strcmp(code, "queue") == 0)
-		{
-			a = 1;
-			continue;
-		}
-		if (a == 0)
-			execute = getsfunc(code, lineNum);
-		else if (a == 1)
-			execute = getqfunc(code, lineNum);
-		(*execute)(&h, lineNum);
+		free(global.line);
+		free_dlistint(stack);
+		fclose(global.fd);
 	}
+	else
+	{
+		dprintf(STDERR_FILENO, "Error: Can't open file %s\n", argv);
+		exit(EXIT_FAILURE);
+	}
+}
+/**
+ * get_opc - function to handle the opcode
+ * @stack: is a stack or queue
+ * @arg: is a parameter
+ * @item: is a parameter
+ * @count: is a line command
+ * Return: nothing
+ */
+int get_opc(stack_t **stack, char *arg, char *item, int count)
+{
+	int i = 0;
+
+	instruction_t op[] = {
+		{"push", _push},
+		{"pall", _pall},
+		{"pint", _pint},
+		{"pop", _pop},
+		{"swap", _swap},
+		{"add", _add},
+		{"sub", _sub},
+		{"nop", _nop},
+		{"div", _div},
+		{"mul", _mul},
+		{"mod", _mod},
+		{"pchar", _pchar},
+		{"pstr", _pstr},
+		{NULL, NULL}
+	};
+
+	while (op[i].opcode)
+	{
+		if (!strcmp(arg, op[i].opcode))
+		{
+			if (!strcmp(arg, "push"))
+			{
+				if (_isdigit(item) == 1)
+					value = atoi(item);
+				else
+					return (1);
+			}
+			op[i].f(stack, (unsigned int)count);
+			break;
+		}
+		i++;
+	}
+	if (!op[i].opcode)
+		return (2);
+
+	return (0);
 }
